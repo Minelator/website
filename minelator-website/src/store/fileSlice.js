@@ -1,44 +1,44 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const uploadFile = createAsyncThunk(
-  'file/upload',
-  async (blob, { rejectWithValue }) => {
+  "file/uploadFile",
+  async (file, { rejectWithValue }) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
-      const formData = new FormData();
-      formData.append('file', blob);
+      const response = await fetch("http://127.0.0.1:8000/upload/", {
+        method: "POST",
+        body: formData,
+      });
 
-      const response = await axios.post(
-        'http://localhost:8000/upload',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          responseType: 'blob', 
-        }
-      );
+      if (!response.ok) {
+        throw new Error("Ошибка при обработке файла.");
+      }
 
-      const blobURL = window.URL.createObjectURL(response.data);
-      return blobURL;
+      const blob = await response.blob();
+      const blobURL = URL.createObjectURL(blob);
+      return { blobURL };
     } catch (error) {
-      return rejectWithValue('Ошибка загрузки файла');
+      return rejectWithValue(error.message);
     }
   }
 );
 
 const fileSlice = createSlice({
-  name: 'file',
+  name: "file",
   initialState: {
     isLoading: false,
     isError: false,
     error: null,
-    uploadedData: null,
-    resultedDataURL: null, 
+    resultedDataURL: null,
+    file: null,
   },
   reducers: {
     setFile(state, action) {
       state.file = action.payload;
+      state.resultedDataURL = null;
+
     },
   },
   extraReducers: (builder) => {
@@ -53,11 +53,10 @@ const fileSlice = createSlice({
         state.error = null;
         state.isError = false;
         state.isLoading = false;
-
-        state.resultedDataURL = action.payload;
+        state.resultedDataURL = action.payload.blobURL;
       })
       .addCase(uploadFile.rejected, (state, action) => {
-        state.error = action.payload || 'Неизвестная ошибка';
+        state.error = action.payload || "Неизвестная ошибка";
         state.isError = true;
         state.isLoading = false;
         state.resultedDataURL = null;

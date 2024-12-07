@@ -1,53 +1,53 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { uploadFile } from '../store/fileSlice';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setFile, uploadFile } from "../store/fileSlice";
 
 const FileUploader = () => {
   const dispatch = useDispatch();
-  const [blobFile, setBlobFile] = useState(null);
-  const [originalFileName, setOriginalFileName] = useState('');
-  const { isLoading, error, isError, resultedDataURL } = useSelector((state) => state.file);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (blobFile) {
-      dispatch(uploadFile(blobFile));
-    } else {
-      console.error('Файл не выбран');
-    }
-  };
+  const { isLoading, error, isError, resultedDataURL, file } = useSelector(
+    (state) => state.file
+  );
 
   const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const blob = new Blob([file], { type: file.type });
-      setBlobFile(blob);
-      setOriginalFileName(file.name);
-    }
+    const selectedFile = event.target.files[0];
+    dispatch(setFile(selectedFile));
   };
 
-  const downloadFile = () => {
+  const handleFileUpload = (event) => {
+    event.preventDefault();
+    if (!file) {
+      alert("Выберите файл для загрузки.");
+      return;
+    }
+    dispatch(uploadFile(file));
+  };
+
+  const handleDownload = () => {
     if (resultedDataURL) {
-      const a = document.createElement('a');
-      a.href = resultedDataURL;
-      a.download = originalFileName || 'processed_file.txt';
-      a.click();
-      window.URL.revokeObjectURL(resultedDataURL);
+      const link = document.createElement("a");
+      link.href = resultedDataURL;
+      link.download = file.name;
+      link.click();
     }
   };
-  
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="file" accept=".txt" onChange={handleFileSelect} />
-      <input type="submit" value="Upload File" />
+    <form>
+      <input
+        type="file"
+        accept=".txt,.json,.yaml,.toml,.properties,.jar,.zip"
+        onChange={handleFileSelect}
+      />
+      <button onClick={handleFileUpload} type="submit">
+        Отправить файл
+      </button>
       {isLoading && <div>Производится отправка файла...</div>}
       {isError && <div className="isError">Ошибка! {error}</div>}
       {resultedDataURL && (
         <div>
-          <button type="button" onClick={downloadFile}>
-            Скачать результат
-          </button>
+        <button type="button" onClick={handleDownload}>
+          Скачать обработанный файл
+        </button>
         </div>
       )}
     </form>

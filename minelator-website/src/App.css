@@ -32,6 +32,31 @@
   color: red;
 }
 
+.resultWrapper{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* height: 100vh; */
+  flex-direction: column;
+}
+
+.scrollContainer {
+  width: 600px; /* Начальная ширина */
+  height: 300px; /* Начальная высота */
+  overflow: auto; /* Включение прокрутки */
+  border: 1px solid #ccc; /* Граница для наглядности */
+  padding: 10px; /* Внутренние отступы */
+  background-color: #f9f9f9; /* Фон для читабельности */
+  resize: both; /* Разрешение изменения размера по горизонтали и вертикали */
+  box-sizing: border-box; /* Учитывать границы и отступы в размере */
+}
+
+.scrollContent {
+  white-space: pre-wrap; /* Сохранение пробелов и переносов строк */
+  text-align: left;
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
